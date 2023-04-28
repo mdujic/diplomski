@@ -14,7 +14,7 @@ def main():
 
     graph.end_inserts()
 
-    graph.rpq_eval(0, 'a?b')
+    graph.all_shortest_rpq_eval(0, '(a+b)(a+b)')
 
 
 if __name__ == '__main__':

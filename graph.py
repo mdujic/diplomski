@@ -148,7 +148,7 @@ class Graph:
             if automaton.is_final_state(current[1]):
                 solutions.add(current[0])
                 self.reconstruct_path_rpq(current)
-            neighbors = self.get_neighbors_rpq(current, automaton)
+            neighbors = self.get_neighbors_rpq(current[0], current[1], automaton)
             for n, q in neighbors:
                 if (n, q) not in visited:
                     next = (n, q, current)
@@ -166,8 +166,7 @@ class Graph:
         path.reverse()
         print("Path:", path)
 
-    def get_neighbors_rpq(self, current, automaton):
-        n, q, prev = current
+    def get_neighbors_rpq(self, n, q, automaton):
         # retrieve all the neighbours (n', q') of (n, q) in Gx
         # that is, look for a label "a" such that (n, a, n') is edge
         # and (q, a, q') is a transition in the automaton (using Automaton.delta)
@@ -206,3 +205,52 @@ class Graph:
             neighbors.append((n, epsilon_neighbor))
         
         return neighbors
+
+    
+    def all_shortest_rpq_eval(self, source: int, regex: str) -> List[int]:
+        automaton = Automaton(regex)
+        start = (source, automaton.start_state, 0, None)
+        open_list = [start]
+        visited = set([start])
+        solutions = set()
+        while open_list:
+            current = open_list.pop(0)
+            if automaton.is_final_state(current[1]):
+                solutions.add(current[0])
+                self.reconstruct_all_paths_rpq(current)
+            neighbors = self.get_neighbors_rpq(current[0], current[1], automaton)
+            for n, q in neighbors:
+                # obtain element x from visited
+                # where x[0] = n and x[1] = q
+                new = self.find_with_node_and_state(visited, n, q)
+                if not new:
+                    new = (n, q, current[2]+1, (current, ))
+                    open_list.append(new)
+                    visited.add(new)
+                elif new[2] == current[2]+1:
+                    new = new[:-1] + (new[-1] + (current,),)
+
+
+        return list(solutions)
+
+    
+    def find_with_node_and_state(self, visited, n, q):
+        for element in visited:
+            if element[0] == n and element[1] == q:
+                return element
+        return None
+    
+    def reconstruct_all_paths_rpq(self, current):
+        node, _, _, prev_list = current
+        if prev_list is None:
+            return
+        for prev in prev_list:
+            path = [node]
+            while prev is not None:
+                if len(prev) == 1:
+                    prev = prev[0]
+                if prev[0] != path[-1]:
+                    path.append(prev[0])
+                prev = prev[3]
+            path.reverse()
+            print("Path:", path)
