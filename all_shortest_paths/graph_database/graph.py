@@ -1,9 +1,8 @@
 from typing import List, Tuple
-from collections import deque
 import uuid
 
-from graph_database.core.trie import Trie
-from regex_transform.automaton import Automaton
+from all_shortest_paths.graph_database.core.trie import Trie
+from all_shortest_paths.regex_transform.automaton import Automaton
 
 
 class Edge:
@@ -52,93 +51,6 @@ class Graph:
     
     def end_inserts(self):
         self.edge_trie.end_inserts()
-
-    def get_neighbors(self, v: int) -> List[int]:
-        neighbors = []
-        for label in self.edge_trie.trie_map.keys():
-            neighbors += self.query(label, v)
-        
-        return neighbors
-
-    def search(self, v: int) -> Tuple[List[int], List[Tuple[int, int, str]]]:
-        # Initialize queue and visited set
-        q = deque()
-        visited = set()
-
-        # Initialize start node
-        start = v
-        q.append(start)
-        visited.add(start)
-
-        # Initialize solutions list and paths dict
-        solutions = [v]
-        paths = {v: None}
-
-        # BFS search
-        while q:
-            current = q.popleft()
-
-            # Check neighbors with query call by all labels in edge_trie.trie_map.keys()
-            neighbors = self.get_neighbors(current)
-            for neighbor in neighbors:
-                next_node = neighbor
-                if next_node not in visited:
-                    q.append(next_node)
-                    visited.add(next_node)
-                    paths[next_node] = current
-                    if neighbor not in solutions:
-                        solutions.append(neighbor)
-
-        # Reconstruct paths
-        paths_list = []
-        for node in paths:
-            if node != v:
-                path = []
-                current = node
-                while current is not None:
-                    path.append(current)
-                    current = paths[current]
-                path.reverse()
-                paths_list.append(tuple(path))
-
-        return solutions, paths_list
-
-    def search_all_shortest_paths(self, start_node: int):
-        open_list = []
-        visited = {}
-        start = (start_node, 0, None)
-        open_list.append(start)
-        visited[start_node] = start
-        solutions = []
-        while open_list:
-            current = open_list.pop(0)
-            node, depth, prev_list = current
-            solutions.append(node)
-            self.reconstruct_paths(current)
-            neighbours = self.get_neighbors(node)
-            for neighbour in neighbours:
-                if neighbour not in visited.keys():
-                    new = (neighbour, depth+1, [current])
-                    open_list.append(new)
-                    visited[neighbour] = new
-                else:
-                    existing = visited[neighbour]
-                    if existing[1] == depth+1:
-                        existing[2].append(current)
-
-    def reconstruct_paths(self, current):
-        node, depth, prev_list = current
-        if prev_list is None:
-            return
-        for prev in prev_list:
-            path = [node]
-            while prev is not None:
-                if len(prev) == 1:
-                    prev = prev[0]
-                path.append(prev[0])
-                prev = prev[2]
-            path.reverse()
-            print("Path:", path)
 
     def rpq_eval(self, source: int, regex: str) -> List[int]:
         list_of_paths = []

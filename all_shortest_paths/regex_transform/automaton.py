@@ -1,7 +1,4 @@
-from typing import Dict, List, Set, Tuple
-from collections import deque
-
-from regex_transform.regex2nfa import regex_to_nfa
+from all_shortest_paths.regex_transform.regex2nfa import regex_to_nfa
 
 class Automaton:
     def __init__(self, regex: str):
