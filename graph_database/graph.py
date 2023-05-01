@@ -1,8 +1,9 @@
 from typing import List, Tuple
 from collections import deque
+import uuid
 
-from trie import Trie
-from automaton import Automaton
+from graph_database.core.trie import Trie
+from regex_transform.automaton import Automaton
 
 
 class Edge:
@@ -10,6 +11,8 @@ class Edge:
         self.source = source
         self.target = target
         self.label = label
+        self.id = uuid.uuid4()
+
 
 class EdgeTrie:
     def __init__(self):
@@ -138,23 +141,24 @@ class Graph:
             print("Path:", path)
 
     def rpq_eval(self, source: int, regex: str) -> List[int]:
+        list_of_paths = []
         automaton = Automaton(regex)
         start = (source, automaton.start_state, None)
         open_list = [start]
         visited = set((source, automaton.start_state))
-        solutions = set()
+        
         while open_list:
             current = open_list.pop(0)
             if automaton.is_final_state(current[1]):
-                solutions.add(current[0])
-                self.reconstruct_path_rpq(current)
+                list_of_paths.append(self.reconstruct_path_rpq(current))
+
             neighbors = self.get_neighbors_rpq(current[0], current[1], automaton)
             for n, q in neighbors:
                 if (n, q) not in visited:
                     next = (n, q, current)
                     open_list.append(next)
                     visited.add((n, q))
-        return list(solutions)
+        return list_of_paths
     
     def reconstruct_path_rpq(self, current):
         node, state, prev = current
@@ -165,6 +169,7 @@ class Graph:
             prev = prev[2]
         path.reverse()
         print("Path:", path)
+        return path
 
     def get_neighbors_rpq(self, n, q, automaton):
         # retrieve all the neighbours (n', q') of (n, q) in Gx
@@ -208,16 +213,17 @@ class Graph:
 
     
     def all_shortest_rpq_eval(self, source: int, regex: str) -> List[int]:
+        
+        all_shortest = []
         automaton = Automaton(regex)
         start = (source, automaton.start_state, 0, None)
         open_list = [start]
         visited = set([start])
-        solutions = set()
+        
         while open_list:
             current = open_list.pop(0)
             if automaton.is_final_state(current[1]):
-                solutions.add(current[0])
-                self.reconstruct_all_paths_rpq(current)
+                all_shortest += self.reconstruct_all_paths_rpq(current)
             neighbors = self.get_neighbors_rpq(current[0], current[1], automaton)
             for n, q in neighbors:
                 # obtain element x from visited
@@ -231,7 +237,7 @@ class Graph:
                     new = new[:-1] + (new[-1] + (current,),)
 
 
-        return list(solutions)
+        return all_shortest
 
     
     def find_with_node_and_state(self, visited, n, q):
@@ -241,6 +247,8 @@ class Graph:
         return None
     
     def reconstruct_all_paths_rpq(self, current):
+
+        list_of_paths = []
         node, _, _, prev_list = current
         if prev_list is None:
             return
@@ -253,4 +261,17 @@ class Graph:
                     path.append(prev[0])
                 prev = prev[3]
             path.reverse()
-            print("Path:", path)
+            if self.simple(path):
+                list_of_paths.append(path)
+                print("Path:", path)
+        
+        return list_of_paths
+
+    def simple(self, path):
+        # check if there is more than one repeating node in the path
+        # if there is, then the path is not simple
+        for i in range(len(path)):
+            for j in range(i+1, len(path)):
+                if path[i] == path[j]:
+                    return False
+        return True
