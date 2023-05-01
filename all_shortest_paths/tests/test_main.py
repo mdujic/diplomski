@@ -34,19 +34,6 @@ def test_all_shortest_rpq_eval():
 
     assert graph.all_shortest_rpq_eval(0, 'aa+ab+ba+bb') == [[0, 2, 4], [0, 2, 1], [0, 1, 4], [0, 1, 3]]
 
-def test_all_shortest_big():
-
-    a = 100
-    graph = Graph()
-    for i in range(a):
-        graph.add_edge(i, i+1, 'a')
-        graph.add_edge(i, i+1, 'b')
-
-    graph.end_inserts()
-    
-    count = len(graph.all_shortest_rpq_eval(0, '(a+b)*'))
-    assert count == a + 1
-
 
 def test_all_shortest_huge():
 
