@@ -27,15 +27,19 @@ class EdgeTrie:
     def query(self, label: str, prefix: int) -> Tuple[List[int], List[int]]:
         if label not in self.trie_map:
             return []
-        
+
         # Use prefix as query and return data as a list of target vertices
         return self.trie_map[label].query(prefix)
-    
+
     def end_inserts(self):
         for trie in self.trie_map.values():
             trie.end_inserts()
 
+BFS = 0
+DFS = -1
+
 class Graph:
+
     def __init__(self):
         self.edges = []
         self.edge_trie = EdgeTrie()
@@ -48,142 +52,124 @@ class Graph:
     def query(self, label: str, prefix: int) -> List[int]:
         data = self.edge_trie.query(label, prefix)
         return data
-    
+
     def end_inserts(self):
         self.edge_trie.end_inserts()
 
-    def rpq_eval(self, source: int, regex: str) -> List[int]:
-        list_of_paths = []
-        automaton = Automaton(regex)
-        start = (source, automaton.start_state, None)
-        open_list = [start]
-        visited = set((source, automaton.start_state))
-        
+    def get_all_nodes(self) -> List[int]:
+        nodes = set()
+        for edge in self.edges:
+            nodes.add(edge.source)
+            nodes.add(edge.target)
+        return list(nodes)
+
+
+    def any_walk(self, v: int, regex: str, shortest: bool = False) -> List[int]:
+        solutions = []
+        A = Automaton(regex)
+
+        start_search_state = (v, A.start_state, None, None)
+        open_list = [start_search_state]
+        visited = set()
+        visited.add((v, A.start_state))
+        reached_final = set()
+        if v in self.get_all_nodes() and A.start_state in A.final_states:
+            reached_final.add(v)
+            solutions.append([v])
+
+        search_type_selector = BFS if shortest else DFS
         while open_list:
-            current = open_list.pop(0)
-            if automaton.is_final_state(current[1]):
-                list_of_paths.append(self.reconstruct_path_rpq(current))
+            # current = (node, state, edge, prev)
+            current = open_list.pop(search_type_selector)
+            n, q, edge, prev = current
+            for n_, q_, edge_ in self.get_neighbors(n, q, A):
+                if (n_, q_) not in visited:
+                    new_search_state = (n_, q_, edge_, current)
+                    visited.add((n_, q_))
+                    open_list.append(new_search_state)
+                    if q_ in A.final_states and n_ not in reached_final:
+                        reached_final.add(n_)
+                        path = self.get_path(current) + [edge_, n_]
+                        solutions.append(path)
 
-            neighbors = self.get_neighbors_rpq(current[0], current[1], automaton)
-            for n, q in neighbors:
-                if (n, q) not in visited:
-                    next = (n, q, current)
-                    open_list.append(next)
-                    visited.add((n, q))
-        return list_of_paths
-    
-    def reconstruct_path_rpq(self, current):
-        node, state, prev = current
-        path = [node]
-        while prev is not None:
-            if prev[0] != path[-1]:
-                path.append(prev[0])
-            prev = prev[2]
-        path.reverse()
-        print("Path:", path)
-        return path
 
-    def get_neighbors_rpq(self, n, q, automaton):
+        return solutions
+
+    def get_path(self, state) -> List:
+        n, q, *_, edge, prev = state
+
+        if not prev:
+            return [n]
+        else:
+            return self.get_path(prev) + [edge, n]
+
+    def get_neighbors(self, n, q, A):
         # retrieve all the neighbours (n', q') of (n, q) in Gx
         # that is, look for a label "a" such that (n, a, n') is edge
         # and (q, a, q') is a transition in the automaton (using Automaton.delta)
 
         # get all the labels in the automaton
         labels = self.edge_trie.trie_map.keys()
-        neighbors = []
 
         for label in labels:
-            # get all the neighbors of n
-            n_neighbors = self.query(label, n)
-            
-            for n_neighbor in n_neighbors:
-                # get the transition from q to q' using label
-                q_neighbors = automaton.delta(q, label)
-                
-                if q_neighbors:
-                    for q_neighbor in q_neighbors:
-                        neighbors.append((n_neighbor, q_neighbor))
+            # get all the neighbors of n in G using label
+            G_neighbors = self.query(label, n)
 
-        # also add the epsilon transitions
-        # neighbors are all the nodes that are reachable from q using only epsilon transitions
-        epsilon_neighbors = []
+            for n_ in G_neighbors:
+                # get neighbors from q in automaton with label
 
-        stack = [q]
-        visited = set()
-        while stack:
-            current = stack.pop()
-            visited.add(current)
-            epsilon_neighbors.append(current)
-            for neighbor in automaton.delta(current, '$'):
-                if neighbor not in visited:
-                    stack.append(neighbor)
-        
-        for epsilon_neighbor in epsilon_neighbors:
-            neighbors.append((n, epsilon_neighbor))
-        
-        return neighbors
+                for q_ in A.delta(q, label) or {}:
+                    edge_ = (n, label, n_)
+                    yield n_, q_, edge_
 
-    
-    def all_shortest_rpq_eval(self, source: int, regex: str) -> List[int]:
-        
-        all_shortest = []
-        automaton = Automaton(regex)
-        start = (source, automaton.start_state, 0, None)
-        open_list = [start]
-        visited = set([start])
-        
+
+
+    def all_shortest_walk(self, v: int, regex: str) -> List[int]:
+
+        solutions = []
+        A = Automaton(regex)
+        open_list = []
+        visited = {}
+
+        if v in self.get_all_nodes():
+            start_search_state = (v, A.start_state, 0, None)
+            visited[(v, A.start_state)] = (0, None)
+            open_list.append(start_search_state)
+
         while open_list:
-            current = open_list.pop(0)
-            if automaton.is_final_state(current[1]):
-                all_shortest += self.reconstruct_all_paths_rpq(current)
-            neighbors = self.get_neighbors_rpq(current[0], current[1], automaton)
-            for n, q in neighbors:
-                # obtain element x from visited
-                # where x[0] = n and x[1] = q
-                new = self.find_with_node_and_state(visited, n, q)
-                if not new:
-                    new = (n, q, current[2]+1, (current, ))
-                    open_list.append(new)
-                    visited.add(new)
-                elif new[2] == current[2]+1:
-                    new = new[:-1] + (new[-1] + (current,),)
+            # BFS is mandatory here
+            current = open_list.pop(BFS)
+            n, q, depth, prev_list = current
+
+            if A.is_final_state(current[1]):
+                solutions.append(self.get_all_paths(current))
+
+            for n_, q_, edge_ in self.get_neighbors(current[0], current[1], A):
+                matching_state = visited.get((n_, q_))
+                if matching_state:
+                    depth_, prev_list_ = matching_state
+                    if depth + 1 == depth_:
+                        prev_list_.append((current, edge_))
+                        # update matching state
+                        visited[(n_, q_)] = (depth_, prev_list_)
+                else:
+                    prev_list = [(current, edge_)]
+                    new_search_state = (n_, q_, depth+1, prev_list)
+                    visited[(n_, q_)] = (depth+1, prev_list)
+                    open_list.append(new_search_state)
+
+        return solutions
 
 
-        return all_shortest
+    def get_all_paths(self, state):
+        paths = []
+        n, q, depth, prev_list = state
+        if not prev_list:
+            return [[n]]
 
-    
-    def find_with_node_and_state(self, visited, n, q):
-        for element in visited:
-            if element[0] == n and element[1] == q:
-                return element
-        return None
-    
-    def reconstruct_all_paths_rpq(self, current):
+        for prev_state, prev_edge in prev_list:
+            for prev_path in self.get_all_paths(prev_state):
+                paths.append(prev_path + [prev_edge, n])
 
-        list_of_paths = []
-        node, _, _, prev_list = current
-        if prev_list is None:
-            return
-        for prev in prev_list:
-            path = [node]
-            while prev is not None:
-                if len(prev) == 1:
-                    prev = prev[0]
-                if prev[0] != path[-1]:
-                    path.append(prev[0])
-                prev = prev[3]
-            path.reverse()
-            if self.simple(path):
-                list_of_paths.append(path)
-                print("Path:", path)
-        
-        return list_of_paths
+        return paths
 
-    def simple(self, path):
-        # check if there is more than one repeating node in the path
-        # if there is, then the path is not simple
-        for i in range(len(path)):
-            for j in range(i+1, len(path)):
-                if path[i] == path[j]:
-                    return False
-        return True
