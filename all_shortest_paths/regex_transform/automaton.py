@@ -1,24 +1,23 @@
-from all_shortest_paths.regex_transform.regex2nfa import regex_to_nfa
+from FAdo.fa import *
+from FAdo.reex import *
+from FAdo.fio import *
 
 class Automaton:
     def __init__(self, regex: str):
-        self.states = set()  # Set of states
-        self.start_state = None  # Start state
-        self.final_states = set()  # Set of final states
-        self.alphabet = set()  # Set of alphabet symbols
-        self.transitions = {}  # Dictionary containing transitions
 
         # Build automaton
         self._build_automaton(regex)
 
     def _build_automaton(self, regex: str) -> None:
-        nfa = regex_to_nfa(regex)
+        r = str2regexp(regex)
+        # we don't want epsilon transitions
+        nfa = r.nfaGlushkov()
 
-        self.states = set(nfa["states"])
-        self.start_state = nfa["initial_state"]
-        self.final_states = set(nfa["final_states"])
-        self.alphabet = set(nfa["alphabets"])
-        self.transitions = nfa["transition_function"]
+        self.states = [*range(len(nfa.States))]
+        self.start_state = next(iter(nfa.Initial))
+        self.final_states = nfa.Final
+        self.alphabet = nfa.Sigma
+        self.transitions = nfa.delta
 
     def delta(self, q, a):
         if q in self.transitions and a in self.transitions[q]:
