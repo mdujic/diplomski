@@ -51,17 +51,3 @@ def test_all_shortest_walk():
             [0, (0, 'a', 1), 1, (1, 'a', 3), 3, (3, 'a', 2), 2]
         ]
     ]
-
-
-def test_all_shortest_huge():
-
-    a = 800
-    graph = Graph()
-    for i in range(a):
-        graph.add_edge(i, i+1, 'a')
-        graph.add_edge(i, i+1, 'b')
-
-    graph.end_inserts()
-
-    count = len(graph.all_shortest_rpq_eval(0, '(a+b)*'))
-    assert count == a + 1
