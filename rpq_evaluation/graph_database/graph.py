@@ -64,7 +64,7 @@ class Graph:
         return list(nodes)
 
 
-    def any_walk(self, v: int, regex: str, shortest: bool = False) -> List[int]:
+    def any_walk(self, v: int, regex: str, shortest: bool = False) -> List:
         solutions = []
         A = Automaton(regex)
 
@@ -124,7 +124,7 @@ class Graph:
 
 
 
-    def all_shortest_walk(self, v: int, regex: str) -> List[int]:
+    def all_shortest_walk(self, v: int, regex: str) -> List:
 
         solutions = []
         A = Automaton(regex)
@@ -172,4 +172,123 @@ class Graph:
                 paths.append(prev_path + [prev_edge, n])
 
         return paths
+
+
+    def restricted_paths(
+        self, v: int, regex: str, restrictor: str, selector: str = ""
+    ) -> List:
+        if selector not in ["all_shortest", "", "any", "any_shortest"]:
+            raise ValueError("selector must be one of '', 'all_shortest', 'any', 'any_shortest'")
+        if restrictor not in ["acyclic", "simple", "trail"]:
+            raise ValueError("restrictor must be one of 'acyclic', 'simple', 'trail'")
+
+        solutions = []
+        A = Automaton(regex)
+        open_list = []
+        visited = set()
+        reached_final = {}
+        start_search_state = (v, A.start_state, 0, None, None)
+        visited.add(start_search_state)
+        open_list.append(start_search_state)
+
+        if v in self.get_all_nodes() and A.start_state in A.final_states:
+            reached_final[v] = 0
+            solutions.append([v])
+
+        search_type_selector = BFS if "shortest" in selector else DFS
+        while open_list:
+            current = open_list.pop(search_type_selector)
+            n, q, depth, edge, prev = current
+            for next_ in self.get_neighbors(n, q, A):
+                n_, q_, edge_ = next_
+                if self.is_valid(current, next_, restrictor):
+                    new_search_state = (n_, q_, depth+1, edge_, current)
+                    visited.add(new_search_state)
+                    open_list.append(new_search_state)
+
+                    if q_ in A.final_states:
+                        path = self.get_path(new_search_state)
+                        if selector in ["", "all_shortest"]:
+                            if selector == "":
+                                solutions.append(path)
+                            elif n_ not in reached_final:
+                                reached_final[n_] = depth + 1
+                                solutions.append(path)
+                            else:
+                                optimal = reached_final[n_]
+                                if depth + 1 == optimal:
+                                    solutions.append(path)
+                        else:
+                            if n_ not in reached_final:
+                                reached_final[n_] = -1
+                                solutions.append(path)
+
+        return solutions
+
+    def is_valid(self, state, next_, restrictor):
+        s = state
+        while s:
+            if restrictor == "acyclic":
+                if s[0] == next_[0]:
+                    return False
+            elif restrictor == "simple":
+                if s[0] == next_[0] and s[-1]:
+                    return False
+            elif restrictor == "trail":
+                if s[3] == next_[2]:
+                    return False
+            s = s[-1]
+        return True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
