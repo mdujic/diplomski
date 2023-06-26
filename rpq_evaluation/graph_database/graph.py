@@ -136,6 +136,11 @@ class Graph:
             visited[(v, A.start_state)] = (0, None)
             open_list.append(start_search_state)
 
+        if A.start_state in A.final_states:
+            solutions.append([[v]])
+
+        A.convert_to_single_final_state()
+
         while open_list:
             # BFS is mandatory here
             current = open_list.pop(BFS)
@@ -239,56 +244,3 @@ class Graph:
                     return False
             s = s[-1]
         return True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
