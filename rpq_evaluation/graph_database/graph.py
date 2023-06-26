@@ -1,8 +1,8 @@
 from typing import List, Tuple
 import uuid
 
-from all_shortest_paths.graph_database.core.trie import Trie
-from all_shortest_paths.regex_transform.automaton import Automaton
+from rpq_evaluation.graph_database.core.trie import Trie
+from rpq_evaluation.regex_transform.automaton import Automaton
 
 
 class Edge:

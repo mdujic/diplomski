@@ -1,4 +1,4 @@
-from all_shortest_paths.graph_database.graph import Graph
+from rpq_evaluation.graph_database.graph import Graph
 
 graph = Graph()
 graph.add_edge(0, 1, 'a')
