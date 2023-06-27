@@ -88,7 +88,6 @@ class Graph:
             solutions.append([v])
             count += 1
 
-
         search_type_selector = BFS if shortest else DFS
         while open_list:
             # current = (node, state, edge, prev)
