@@ -15,7 +15,7 @@ graph.end_inserts()
 
 
 def test_any_walk():
-    assert graph.any_walk(0, 'a*') == [
+    assert graph.any_walk(0, 'a*')[0] == [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -24,7 +24,7 @@ def test_any_walk():
     ]
 
 def test_any_shortest_walk():
-    assert graph.any_walk(0, '(a+b)*', True) == [
+    assert graph.any_walk(0, '(a+b)*', True)[0] == [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -34,7 +34,7 @@ def test_any_shortest_walk():
     ]
 
 def test_all_shortest_walk():
-    assert graph.all_shortest_walk(0, 'a*') == [
+    assert graph.all_shortest_walk(0, 'a*')[0] == [
         [
             [0]
         ],
@@ -53,7 +53,7 @@ def test_all_shortest_walk():
     ]
 
 def test_all_shortest_trail():
-    assert graph.restricted_paths(0, 'a*', "trail", "all_shortest") == [
+    assert graph.restricted_paths(0, 'a*', "trail", "all_shortest")[0] == [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -62,7 +62,7 @@ def test_all_shortest_trail():
     ]
 
 def test_all_shortest_simple():
-    assert graph.restricted_paths(0, 'a*', "simple", "all_shortest") == [
+    assert graph.restricted_paths(0, 'a*', "simple", "all_shortest")[0] == [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -71,7 +71,7 @@ def test_all_shortest_simple():
     ]
 
 def test_all_shortest_acyclic():
-    assert graph.restricted_paths(0, 'a*', "acyclic", "all_shortest") == [
+    assert graph.restricted_paths(0, 'a*', "acyclic", "all_shortest")[0] == [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -80,7 +80,7 @@ def test_all_shortest_acyclic():
     ]
 
 def test_simple():
-    assert graph.restricted_paths(0, 'a*', "simple", "") == [
+    assert graph.restricted_paths(0, 'a*', "simple", "")[0] == [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -89,7 +89,7 @@ def test_simple():
     ]
 
 def test_acyclic():
-    assert graph.restricted_paths(0, 'a*', "acyclic", "") ==  [
+    assert graph.restricted_paths(0, 'a*', "acyclic", "")[0] ==  [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -98,7 +98,7 @@ def test_acyclic():
     ]
 
 def test_trail():
-    assert graph.restricted_paths(0, 'a*', "trail", "") == [
+    assert graph.restricted_paths(0, 'a*', "trail", "")[0] == [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -109,7 +109,7 @@ def test_trail():
 
 
 def test_any_simple():
-    assert graph.restricted_paths(0, 'a*', "simple", "any") ==  [
+    assert graph.restricted_paths(0, 'a*', "simple", "any")[0] ==  [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -118,7 +118,7 @@ def test_any_simple():
     ]
 
 def test_any_acyclic():
-    assert graph.restricted_paths(0, 'a*', "acyclic", "any") ==  [
+    assert graph.restricted_paths(0, 'a*', "acyclic", "any")[0] ==  [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -127,7 +127,7 @@ def test_any_acyclic():
     ]
 
 def test_any_trail():
-    assert graph.restricted_paths(0, 'a*', "trail", "any") ==  [
+    assert graph.restricted_paths(0, 'a*', "trail", "any")[0] ==  [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -136,7 +136,7 @@ def test_any_trail():
     ]
 
 def test_any_shortest_simple():
-    assert graph.restricted_paths(0, 'a*', "simple", "any_shortest") ==  [
+    assert graph.restricted_paths(0, 'a*', "simple", "any_shortest")[0] ==  [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -145,7 +145,7 @@ def test_any_shortest_simple():
     ]
 
 def test_any_shortest_acyclic():
-    assert graph.restricted_paths(0, 'a*', "acyclic", "any_shortest") ==  [
+    assert graph.restricted_paths(0, 'a*', "acyclic", "any_shortest")[0] ==  [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
@@ -154,7 +154,7 @@ def test_any_shortest_acyclic():
     ]
 
 def test_any_shortest_trail():
-    assert graph.restricted_paths(0, 'a*', "trail", "any_shortest") ==  [
+    assert graph.restricted_paths(0, 'a*', "trail", "any_shortest")[0] ==  [
         [0],
         [0, (0, 'a', 1), 1],
         [0, (0, 'a', 5), 5],
