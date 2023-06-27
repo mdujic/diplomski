@@ -17,7 +17,7 @@ def initialize_wiki_graph(column: int = 3) -> (Graph, dict):
 
     graph = Graph()
 
-    input_path = "wikiRfA.csv"
+    input_path = "rpq_evaluation/tests/wikiRfA.csv"
     nodes = set()
 
     with open(input_path, 'r') as csv_file:
