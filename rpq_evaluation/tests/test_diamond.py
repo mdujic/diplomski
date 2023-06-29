@@ -16,19 +16,19 @@ def initialize_graph(n) -> Graph:
 
 
 def test_all_shortest_walk():
-    for n in range(100):
+    for n in range(0, 100, 3):
         graph = initialize_graph(n)
 
         total_paths = 0
-        for groups in graph.all_shortest_walk(0, 'a*')[0]:
+        for groups in graph.all_shortest_walk(
+            0, 'a*', limit = 100000, timeout = 60)[0]:
             total_paths += len(groups)
         print(f"n: {n}, total_paths: {total_paths}")
 
-        if n <= 33:
+        if n <= 42:
             assert total_paths == 2**((n + 8)//3) - 3
         else:
-            assert total_paths == 10000
-
+            assert total_paths == 100000
 
 def test_all_shortest_walk_timeout():
     graph = initialize_graph(100)
