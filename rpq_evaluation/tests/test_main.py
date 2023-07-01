@@ -13,7 +13,7 @@ def initialize_simple_graph() -> Graph:
     graph.add_edge(2, 4, 'b')
     graph.add_edge(3, 2, 'a')
     graph.add_edge(3, 4, 'b')
-
+    # breakpoint()
     graph.end_inserts()
 
     return graph
