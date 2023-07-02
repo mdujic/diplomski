@@ -1,7 +1,7 @@
 #!/bin/bash                                                                    
 n=100  # number of times to run the command                                     
 # array of commands to run
-commands_to_run=("pytest rpq_evaluation/tests/test_diamond.py -s -vv")                                                                            
+commands_to_run=("pytest rpq_evaluation/tests/test_diamond.py -s -vv" "pytest rpq_evaluation/tests/test_facebook.py")                                                                            
 total_time=0                                                                   
 for ((i=1; i<=n; i++))                                                         
 do                                                                             
