@@ -29,49 +29,137 @@ def initialize_facebook_graph() -> Graph:
 
 
 @pytest.mark.parametrize(
-    "regex, expected",
+    "v, regex, shortest, limit, timeout",
     [
-        ('a*', 4039),
+        (0, 'a*', True, 10**5, 60),
+        (0, 'a*', False, 10**5, 60),
+        (0, 'a*', True, 10, 60),
+        (0, 'a*', False, 10, 60),
+        (1123, 'a*', True, 10**5, 60),
+        (1123, 'a*', False, 10**5, 60),
+        (1123, 'a*', True, 10, 60),
+        (1123, 'a*', False, 10, 60),
+        (3754, 'a*', True, 10**5, 60),
+        (3754, 'a*', False, 10**5, 60),
+        (3754, 'a*', True, 10, 60),
+        (3754, 'a*', False, 10, 60),
+        (1543, 'a*', True, 10**5, 60),
+        (1543, 'a*', False, 10**5, 60),
+        (1543, 'a*', True, 10, 60),
+        (1542, 'a*', False, 10, 60),
     ]
 )
-def test_facebook_any_walk(regex, expected):
+def test_any_walk(v, regex, shortest, limit, timeout):
     graph = initialize_facebook_graph()
-    paths, _ = graph.any_walk(0, regex)
-    assert len(paths) == expected
-
-
-@pytest.mark.parametrize(
-    "regex, expected",
-    [
-        ('a*', 18998),
-    ]
-)
-def test_facebook_all_shortest_walk(regex, expected):
-    graph = initialize_facebook_graph()
-    groups, _ = graph.all_shortest_walk(0, regex, limit = 100000)
-    assert sum(len(group) for group in groups) == expected
-
-
-@pytest.mark.parametrize(
-    "restrictor, selector, expected",
-    [
-        ("trail", "all_shortest", 10000), #timeout
-        ("simple", "all_shortest", 10000), #timeout
-        ("acyclic", "all_shortest", 10000), #timeout
-        ("simple", "", 10000),  #timeout
-        ("acyclic", "", 10000), #timeout
-        ("trail", "", 10000),   #timeout
-        ("simple", "any", 1102),
-        ("acyclic", "any", 1102),
-        ("trail", "any", 1102),
-        ("simple", "any_shortest", 3261),
-        ("acyclic", "any_shortest", 3261),
-        ("trail", "any_shortest", 3261),
-    ]
-)
-def test_facebook_restricted(restrictor, selector, expected):
-    graph = initialize_facebook_graph()
-    solutions, timeout = graph.restricted_paths(
-        0, "a*", restrictor, selector, limit = 10000, timeout = 5
+    print("\n" + "+------------------------------------+")
+    print(f"v: {v}, shortest: {shortest}, limit: {limit}, timeout: {timeout}")
+    print("+------------------------------------+")
+    file_name = f"rpq_evaluation/tests/test_facebook_results/any_shortest_walk_{v}_{shortest}_{limit}_{timeout}.csv"
+    # open file for writing and append results
+    f = open(file_name, "a")
+    f.write("path,time\n")
+    paths, time_ = graph.any_walk(
+        v=v,
+        regex=regex,
+        shortest=shortest,
+        limit=limit,
+        timeout=timeout
     )
-    assert len(solutions) == expected
+    print(f"{len(paths)},{time_}")
+    f.write(f"{len(paths)},{time_}\n")
+    f.write("\n")
+    f.close()
+
+    assert len(paths) <= limit and time_ <= timeout
+    print("*------------------------------------*")
+
+
+@pytest.mark.parametrize(
+    "v, regex, limit, timeout",
+    [
+        (0, 'a*', 10**5, 60),
+        (0, 'a*', 10, 60),
+        (1123, 'a*', 10**5, 60),
+        (1123, 'a*', 10, 60),
+        (3754, 'a*', 10**5, 60),
+        (3754, 'a*', 10, 60),
+        (1543, 'a*', 10**5, 60),
+        (1543, 'a*', 10, 60),
+    ]
+)
+def test_all_shortest_walk(v, regex, limit, timeout):
+    graph = initialize_facebook_graph()
+    print("\n" + "+------------------------------------+")
+    print(f"v: {v}, limit: {limit}, timeout: {timeout}")
+    print("+------------------------------------+")
+    file_name = f"rpq_evaluation/tests/test_facebook_results/all_shortest_walk_{v}_{limit}_{timeout}.csv"
+    # open file for writing and append results
+    f = open(file_name, "a")
+    f.write("path,time\n")
+    groups, time_ = graph.all_shortest_walk(
+        v=v,
+        regex=regex,
+        limit=limit,
+        timeout=timeout
+    )
+    len_paths = sum(len(group) for group in groups)
+    print(f"{len_paths},{time_}")
+    f.write(f"{len_paths},{time_}\n")
+    f.write("\n")
+    f.close()
+    assert len_paths <= limit and time_ <= timeout
+    print("*------------------------------------*")
+
+@pytest.mark.parametrize(
+    "restrictor, selector, limit, timeout",
+    [
+        ("trail", "all_shortest", 10**5, 1),
+        ("simple", "all_shortest", 10**5, 1),
+        ("acyclic", "all_shortest", 10**5, 1),
+        ("simple", "", 10**5, 1),
+        ("acyclic", "", 10**5, 1),
+        ("trail", "", 10**5, 1),
+        ("simple", "any", 10**5, 1),
+        ("acyclic", "any", 10**5, 1),
+        ("trail", "any", 10**5, 1),
+        ("simple", "any_shortest", 10**5, 1),
+        ("acyclic", "any_shortest", 10**5, 1),
+        ("trail", "any_shortest", 10**5, 1),
+        ("trail", "all_shortest", 10, 60),
+        ("simple", "all_shortest", 10, 60),
+        ("acyclic", "all_shortest", 10, 60),
+        ("simple", "", 10, 60),
+        ("acyclic", "", 10, 60),
+        ("trail", "", 10, 60),
+        ("simple", "any", 10, 60),
+        ("acyclic", "any", 10, 60),
+        ("trail", "any", 10, 60),
+        ("simple", "any_shortest", 10, 60),
+        ("acyclic", "any_shortest", 10, 60),
+        ("trail", "any_shortest", 10, 60),
+    ]
+)
+def test_restricted(restrictor, selector, limit, timeout,):
+    graph = initialize_facebook_graph()
+    print("\n" + "+------------------------------------+")
+    print(f"restrictor: {restrictor}, selector: {selector}, limit: {limit}, timeout: {timeout}")
+    print("+------------------------------------+")
+    file_name = f"rpq_evaluation/tests/test_facebook_results/restricted_{restrictor}_{selector}_{limit}_{timeout}.csv"
+    # open file for writing and append results
+    f = open(file_name, "a")
+    f.write("path,time\n")
+
+    solutions, time_ = graph.restricted_paths(
+        v=0,
+        regex="a*",
+        restrictor=restrictor,
+        selector=selector,
+        limit=limit,
+        timeout=timeout
+    )
+    print(f"{len(solutions)},{time_}")
+    f.write(f"{len(solutions)},{time_}\n")
+    f.write("\n")
+    f.close()
+    assert len(solutions) <= limit and time_ <= timeout + 0.01
+    print("*------------------------------------*")
