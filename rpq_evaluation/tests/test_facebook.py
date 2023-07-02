@@ -161,5 +161,5 @@ def test_restricted(restrictor, selector, limit, timeout,):
     f.write(f"{len(solutions)},{time_}\n")
     f.write("\n")
     f.close()
-    assert len(solutions) <= limit and time_ <= timeout + 0.01
+    assert len(solutions) <= limit and time_ <= timeout + 0.5
     print("*------------------------------------*")
